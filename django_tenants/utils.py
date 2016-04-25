@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from django.conf import settings
-from django.db import connections, DEFAULT_DB_ALIAS
+from django.db import connections
 
 try:
     from django.apps import apps
