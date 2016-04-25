@@ -40,7 +40,7 @@ class Command(InteractiveTenantOption, BaseCommand):
 
     def handle(self, *args, **options):
         tenant = self.get_tenant_from_options_or_interactive(**options)
-        connections(tenant_db).set_tenant(tenant)
+        tenant_db.set_tenant(tenant)
 
         command_name = options['command_name'][0]
 
