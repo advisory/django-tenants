@@ -14,20 +14,21 @@ def run_migrations(args, options, executor_codename, schema_name, allow_atomic=T
 
     PUBLIC_SCHEMA_NAME = get_public_schema_name()
 
-    connect_db = connections[settings.TENANT_DATABASE]
+    options['database'] = settings.TENANT_DATABASE
     if schema_name == PUBLIC_SCHEMA_NAME:
-        connect_db = connections[DEFAULT_DB_ALIAS]
+        options['database'] = DEFAULT_DB_ALIAS
 
     style = color.color_style()
 
     def style_func(msg):
-        return '[%s:%s] %s' % (
+        return '[%s:%s:%s] %s' % (
+            options['database'],
             style.NOTICE(executor_codename),
             style.NOTICE(schema_name),
             msg
         )
 
-    connect_db.set_schema(schema_name)
+    connections[options['database']].set_schema(schema_name)
 
     stdout = OutputWrapper(sys.stdout)
     stdout.style_func = style_func
@@ -39,8 +40,8 @@ def run_migrations(args, options, executor_codename, schema_name, allow_atomic=T
 
     try:
         transaction.commit()
-        connect_db.close()
-        connect_db.connection = None
+        connections[options['database']].close()
+        connections[options['database']].connection = None
     except transaction.TransactionManagementError:
         if not allow_atomic:
             raise
