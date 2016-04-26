@@ -10,33 +10,31 @@ except ImportError:
 
 from django.core import mail
 
-tenant_db = connections[settings.TENANT_DATABASE]
-
 
 @contextmanager
 def schema_context(schema_name):
-    previous_tenant = tenant_db.tenant
+    previous_tenant = connections[settings.TENANT_DATABASE].tenant
     try:
-        tenant_db.set_schema(schema_name)
+        connections[settings.TENANT_DATABASE].set_schema(schema_name)
         yield
     finally:
         if previous_tenant is None:
-            tenant_db.set_schema_to_public()
+            connections[settings.TENANT_DATABASE].set_schema_to_public()
         else:
-            tenant_db.set_tenant(previous_tenant)
+            connections[settings.TENANT_DATABASE].set_tenant(previous_tenant)
 
 
 @contextmanager
 def tenant_context(tenant):
-    previous_tenant = tenant_db.tenant
+    previous_tenant = connections[settings.TENANT_DATABASE].tenant
     try:
-        tenant_db.set_tenant(tenant)
+        connections[settings.TENANT_DATABASE].set_tenant(tenant)
         yield
     finally:
         if previous_tenant is None:
-            tenant_db.set_schema_to_public()
+            connections[settings.TENANT_DATABASE].set_schema_to_public()
         else:
-            tenant_db.set_tenant(previous_tenant)
+            connections[settings.TENANT_DATABASE].set_tenant(previous_tenant)
 
 
 def get_tenant_model():
@@ -94,7 +92,7 @@ def django_is_in_test_mode():
 
 
 def schema_exists(schema_name):
-    cursor = tenant_db.cursor()
+    cursor = connections[settings.TENANT_DATABASE].cursor()
 
     # check if this schema already exists in the db
     sql = 'SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_namespace WHERE LOWER(nspname) = LOWER(%s))'

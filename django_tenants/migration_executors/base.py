@@ -48,7 +48,7 @@ def run_migrations(args, options, executor_codename, schema_name, allow_atomic=T
         # We are in atomic transaction, don't close connections
         pass
 
-    connect_db.set_schema_to_public()
+    # connect_db.set_schema_to_public()
 
 
 class MigrationExecutor(object):

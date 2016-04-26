@@ -34,7 +34,7 @@ class TenantSyncRouter(object):
             if not self.app_in_list(app_label, settings.SHARED_APPS):
                 return False
 
-        if connections[settings.TENANT_DATABASE].schema_name != get_public_schema_name():
+        elif connections[settings.TENANT_DATABASE].schema_name != get_public_schema_name():
             if not self.app_in_list(app_label, settings.TENANT_APPS):
                 return False
 
