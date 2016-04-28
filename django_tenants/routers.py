@@ -24,6 +24,16 @@ class TenantSyncRouter(object):
             appconfig.__module__, appconfig.__class__.__name__)
         return (appconfig.name in apps_list) or (appconfig_full_name in apps_list)
 
+    def db_for_read(self, model, **hints):
+        if self.app_in_list(model._meta.app_label, settings.TENANT_APPS):
+            return settings.TENANT_DATABASE
+        return None
+
+    def db_for_write(self, model, **hints):
+        if self.app_in_list(model._meta.app_label, settings.TENANT_APPS):
+            return settings.TENANT_DATABASE
+        return None
+
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         # the imports below need to be done here else django <1.5 goes crazy
         # https://code.djangoproject.com/ticket/20704

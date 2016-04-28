@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.shortcuts import get_object_or_404
-from .utils import get_tenant_model, remove_www, get_public_schema_name, get_tenant_domain_model
+from .utils import remove_www, get_public_schema_name, get_tenant_domain_model
 
 
 class TenantMiddleware(object):
@@ -23,7 +23,7 @@ class TenantMiddleware(object):
             connections[DEFAULT_DB_ALIAS].set_schema_to_public()
 
             connections[settings.TENANT_DATABASE].set_schema(
-                request.session.get('SELECTED_SCHEMA', 'public'))
+                request.session.get(settings.TENANT_SESSION_KEY, 'public'))
 
         else:
             # Connection needs first to be at the public schema, as this is where
