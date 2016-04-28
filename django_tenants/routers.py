@@ -39,10 +39,11 @@ class TenantSyncRouter(object):
         # https://code.djangoproject.com/ticket/20704
         from django.db import DEFAULT_DB_ALIAS
 
-        if self.app_in_list(app_label, settings.SHARED_APPS):
-            return db == DEFAULT_DB_ALIAS
-        elif self.app_in_list(app_label, settings.TENANT_APPS):
+        if self.app_in_list(app_label, settings.TENANT_APPS):
             return db == settings.TENANT_DATABASE
-        else:
-            print('Not migrating {0} to {1}'.format(app_label, db))
-            return False
+
+        elif self.app_in_list(app_label, settings.SHARED_APPS):
+            return db == DEFAULT_DB_ALIAS
+
+        print('Not migrating {0} to {1}'.format(app_label, db))
+        return False
