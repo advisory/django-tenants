@@ -1,5 +1,5 @@
-django-tenants
-==============
+django-tenants (Multi db version)
+=================================
 
 .. image:: https://badge.fury.io/py/django-tenants.svg
     :target: http://badge.fury.io/py/django-tenants
@@ -18,7 +18,9 @@ able to have:
 -  Multiple customers running on the same instance
 -  Shared and Tenant-Specific data
 -  Tenant View-Routing
-
+-  Shared data can be in a separate database
+-  Tenants can be housed in a separate database from shared data
+-  Select tenant via Session key instead of url only
 
 
 What are schemas
@@ -168,6 +170,9 @@ created ``Client`` inside an app named ``customers``, your
 
     TENANT_MODEL = "customers.Client" # app.Model
     TENANT_DOMAIN_MODEL = "customers.Domain" # app.Model
+    TENANT_DATABASE = 'other_db'  # name of a different database
+    TENANT_SELECTION_METHOD = 'domain' or 'session'  # select how the connection is switched
+    TENANT_SESSION_KEY = 'tenant_schema'  # store the selected schema in the session
 
 Now run ``migrate_schemas``, this will sync your apps to the ``public``
 schema.
