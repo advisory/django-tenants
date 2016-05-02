@@ -24,17 +24,26 @@ class TenantSyncRouter(object):
             appconfig.__module__, appconfig.__class__.__name__)
         return (appconfig.name in apps_list) or (appconfig_full_name in apps_list)
 
+    def db_for_read(self, model, **hints):
+        if self.app_in_list(model._meta.app_label, settings.TENANT_APPS):
+            return settings.TENANT_DATABASE
+        return None
+
+    def db_for_write(self, model, **hints):
+        if self.app_in_list(model._meta.app_label, settings.TENANT_APPS):
+            return settings.TENANT_DATABASE
+        return None
+
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         # the imports below need to be done here else django <1.5 goes crazy
         # https://code.djangoproject.com/ticket/20704
-        from django.db import connection
-        from django_tenants.utils import get_public_schema_name
+        from django.db import DEFAULT_DB_ALIAS
 
-        if connection.schema_name == get_public_schema_name():
-            if not self.app_in_list(app_label, settings.SHARED_APPS):
-                return False
-        else:
-            if not self.app_in_list(app_label, settings.TENANT_APPS):
-                return False
+        if self.app_in_list(app_label, settings.TENANT_APPS):
+            return db == settings.TENANT_DATABASE
 
-        return None
+        elif self.app_in_list(app_label, settings.SHARED_APPS):
+            return db == DEFAULT_DB_ALIAS
+
+        print('Not migrating {0} to {1}'.format(app_label, db))
+        return False

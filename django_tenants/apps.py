@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db import DEFAULT_DB_ALIAS
 from django.apps import AppConfig
 from django.core.exceptions import ImproperlyConfigured
 from django_tenants.utils import get_public_schema_name, get_tenant_model
@@ -17,7 +18,7 @@ class DjangoTenantsConfig(AppConfig):
     verbose_name = "Django tenants"
 
     def ready(self):
-        from django.db import connection
+        from django.db import connections
 
         # Test for configuration recommendations. These are best practices,
         # they avoid hard to find bugs and unexpected behaviour.
@@ -31,6 +32,14 @@ class DjangoTenantsConfig(AppConfig):
         if not hasattr(settings, 'TENANT_MODEL'):
             raise ImproperlyConfigured('TENANT_MODEL setting not set')
 
+        if not hasattr(settings, 'TENANT_SESSION_KEY'):
+            setattr(settings, 'TENANT_SESSION_KEY', 'tenant_schema')
+
+        if not hasattr(settings, 'TENANT_SELECTION_METHOD'):
+            setattr(settings, 'TENANT_SELECTION_METHOD', 'domain')
+
+        if not hasattr(settings, 'TENANT_DATABASE'):
+            setattr(settings, 'TENANT_DATABASE', 'default')
 
         if 'django_tenants.routers.TenantSyncRouter' not in settings.DATABASE_ROUTERS:
             raise ImproperlyConfigured("DATABASE_ROUTERS setting must contain "
@@ -46,7 +55,7 @@ class DjangoTenantsConfig(AppConfig):
 
             # first check that the model table is created
             model = get_tenant_model()
-            c = connection.cursor()
+            c = connections[DEFAULT_DB_ALIAS].cursor()
             c.execute(
                 'SELECT 1 FROM information_schema.tables WHERE table_name = %s;',
                 [model._meta.db_table]
